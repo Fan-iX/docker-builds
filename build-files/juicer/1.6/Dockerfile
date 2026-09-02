@@ -79,9 +79,9 @@ WORKDIR /test
 
 RUN mkdir fastq
 
-RUN wget https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR139/079/SRR13994279/SRR13994279_1.fastq.gz -O fastq/SRR13994279_R1.fastq.gz
+RUN wget https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR139/079/SRR13994279/SRR13994279_1.fastq.gz -O - | gzip -dc | head -n 1000000 > fastq/SRR13994279_R1.fastq
 
-RUN wget https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR139/079/SRR13994279/SRR13994279_2.fastq.gz -O fastq/SRR13994279_R2.fastq.gz
+RUN wget https://ftp.sra.ebi.ac.uk/vol1/fastq/SRR139/079/SRR13994279/SRR13994279_2.fastq.gz -O - | gzip -dc | head -n 1000000 > fastq/SRR13994279_R2.fastq
 
 RUN wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/002/163/515/GCA_002163515.1_ASM216351v1/GCA_002163515.1_ASM216351v1_genomic.fna.gz -O - | gzip -dc > reference.fna
 
