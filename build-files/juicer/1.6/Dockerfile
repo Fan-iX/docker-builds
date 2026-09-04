@@ -1,8 +1,40 @@
+FROM ubuntu:noble AS builder
+
+ARG BWA_VER="0.7.19"
+ARG SAMTOOLS_VER="1.24"
+
+# install dependencies required for compiling samtools and bwa
+RUN apt-get update && apt-get install --no-install-recommends -y \
+    libncurses5-dev \
+    libbz2-dev \
+    liblzma-dev \
+    libcurl4-gnutls-dev \
+    zlib1g-dev \
+    libssl-dev \
+    libdeflate-dev \
+    gcc \
+    make \
+    bzip2 \
+    wget \
+    ca-certificates
+
+# build bwa
+RUN wget https://github.com/lh3/bwa/archive/refs/tags/v${BWA_VER}.tar.gz -qO - | tar xvz && \
+    cd bwa-${BWA_VER} && \
+    make && \
+    mv bwa /usr/local/bin/
+
+# build samtools
+RUN wget https://github.com/samtools/samtools/releases/download/${SAMTOOLS_VER}/samtools-${SAMTOOLS_VER}.tar.bz2 -qO - | tar xvj && \
+    cd samtools-${SAMTOOLS_VER} && \
+    ./configure && \
+    make && \
+    make install
+
+
 FROM ubuntu:noble AS app
 
 ARG JUICER_VER="1.6"
-ARG BWA_VER="0.7.19"
-ARG SAMTOOLS_VER="1.24"
 
 # metadata
 LABEL base.image="ubuntu:noble"
@@ -28,9 +60,7 @@ RUN apt-get update && apt-get install -y \
     python-is-python3 \
     perl-modules \
     gawk \
-    gcc \
     locales \
-    make \
     bzip2 \
     wget \
     ca-certificates \
@@ -45,21 +75,11 @@ RUN locale-gen en_US.UTF-8
 
 WORKDIR /opt/
 
-# install bwa
-RUN wget https://github.com/lh3/bwa/archive/refs/tags/v${BWA_VER}.tar.gz -O - | tar xvz && \
-    cd bwa-${BWA_VER} && \
-    make && \
-    mv bwa /usr/local/bin/
-
-# install samtools
-RUN wget https://github.com/samtools/samtools/releases/download/${SAMTOOLS_VER}/samtools-${SAMTOOLS_VER}.tar.bz2 -O - | tar xvj && \
-    cd samtools-${SAMTOOLS_VER} && \
-    ./configure && \
-    make && \
-    make install
+# copy in samtools and bwa executables from builder stage
+COPY --from=builder /usr/local/bin/* /usr/local/bin/
 
 # install juicer
-RUN wget https://github.com/theaidenlab/juicer/archive/${JUICER_VER}.tar.gz -O - | tar xvz
+RUN wget https://github.com/theaidenlab/juicer/archive/${JUICER_VER}.tar.gz -qO - | tar xvz
 
 # install juicer tools
 RUN wget https://s3.amazonaws.com/hicfiles.tc4ga.com/public/juicer/juicer_tools_1.22.01.jar -qO /opt/juicer-${JUICER_VER}/CPU/common/juicer_tools.jar
