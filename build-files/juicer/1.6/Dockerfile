@@ -35,6 +35,7 @@ RUN wget https://github.com/samtools/samtools/releases/download/${SAMTOOLS_VER}/
 FROM ubuntu:noble AS app
 
 ARG JUICER_VER="1.6"
+ARG JUICER_TOOLS_VER="1.22.01"
 
 # metadata
 LABEL base.image="ubuntu:noble"
@@ -82,7 +83,7 @@ COPY --from=builder /usr/local/bin/* /usr/local/bin/
 RUN wget https://github.com/theaidenlab/juicer/archive/${JUICER_VER}.tar.gz -qO - | tar xvz
 
 # install juicer tools
-RUN wget https://s3.amazonaws.com/hicfiles.tc4ga.com/public/juicer/juicer_tools_1.22.01.jar -qO /opt/juicer-${JUICER_VER}/CPU/common/juicer_tools.jar
+RUN wget https://s3.amazonaws.com/hicfiles.tc4ga.com/public/juicer/juicer_tools_${JUICER_TOOLS_VER}.jar -qO /opt/juicer-${JUICER_VER}/CPU/common/juicer_tools.jar
 
 RUN mkdir /opt/juicer && \
     ln -s /opt/juicer-${JUICER_VER}/CPU /opt/juicer/scripts && \
